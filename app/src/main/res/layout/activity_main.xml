@@ -21,4 +21,14 @@
         android:layout_height="wrap_content"
         android:text="pontos"/>
 
+    <Button
+        android:text="Pesquisar Beacons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/but"
+        android:layout_toEndOf="@+id/but"
+        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
+        android:id="@+id/searchBeaconsBtn" />
+
 </RelativeLayout>

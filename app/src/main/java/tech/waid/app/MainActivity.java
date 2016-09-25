@@ -1,5 +1,6 @@
 package tech.waid.app;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,8 @@ import tech.waid.app.model.Beacon;
 import tech.waid.app.model.Ponto;
 import tech.waid.app.trilateration.NonLinearLeastSquaresSolver;
 import tech.waid.app.trilateration.TrilaterationFunction;
+
+import static android.R.attr.id;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -132,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
         };
 
         Button but = (Button)findViewById(R.id.but);
+        Button search = (Button)findViewById(R.id.searchBeaconsBtn);
+        search.setOnClickListener(onClickListener);
 
         but.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,4 +157,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(MainActivity.this, SearchBeaconActivity.class));
+        }
+    };
 }
