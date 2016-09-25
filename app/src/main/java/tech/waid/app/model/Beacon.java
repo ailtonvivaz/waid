@@ -6,12 +6,23 @@ package tech.waid.app.model;
 
 public class Beacon {
 
-    private int id;
-    private Ponto posicao;
+    protected int id;
+    protected Ponto posicao;
 
-    public Beacon(int id, Ponto posicao) {
+    public String getBluetoothName() {
+        return bluetoothName;
+    }
+
+    public void setBluetoothName(String bluetoothName) {
+        this.bluetoothName = bluetoothName;
+    }
+
+    protected String bluetoothName;
+
+    public Beacon(int id, Ponto posicao, String bluetoothName) {
         this.id = id;
         this.posicao = posicao;
+        this.bluetoothName = bluetoothName;
     }
 
     public int getId() {

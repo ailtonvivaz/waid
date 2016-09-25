@@ -31,4 +31,5 @@
         android:layout_marginStart="15dp"
         android:id="@+id/searchBeaconsBtn" />
 
+
 </RelativeLayout>

@@ -26,9 +26,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Beacon b1 = new Beacon(1, new Ponto(3., 3., 3.));
-        Beacon b2 = new Beacon(1, new Ponto(9., 3., 3.));
-        Beacon b3 = new Beacon(1, new Ponto(6., 6., 2.));
+        Beacon b1 = new Beacon(1, new Ponto(3., 3., 3.), "");
+        Beacon b2 = new Beacon(1, new Ponto(9., 3., 3.), "");
+        Beacon b3 = new Beacon(1, new Ponto(6., 6., 2.), "");
 
         final double[][] positions = new double[][] { { b1.getPosicao().getX(), b1.getPosicao().getY(), b1.getPosicao().getZ() }, { b2.getPosicao().getX(), b2.getPosicao().getY(), b2.getPosicao().getZ() }, { b3.getPosicao().getX(), b3.getPosicao().getY(), b3.getPosicao().getZ() } };
         final double[][] distances = new double[][] {
