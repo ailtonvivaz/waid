@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            startActivity(new Intent(MainActivity.this, SearchBeaconActivity.class));
+            startActivity(new Intent(MainActivity.this, MapActivity.class));
         }
     };
 }
