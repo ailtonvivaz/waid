@@ -40,7 +40,8 @@ import tech.waid.app.model.BeaconDistance;
 import tech.waid.app.model.Ponto;
 import tech.waid.app.trilateration.NonLinearLeastSquaresSolver;
 import tech.waid.app.trilateration.TrilaterationFunction;
-import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.charts.*;
+import com.github.mikephil.charting.data.*;
 
 public class MapActivity extends AppCompatActivity {
 
@@ -75,9 +76,9 @@ public class MapActivity extends AppCompatActivity {
     //Cria os beacons com suas cordenadas
     protected  void CreateBeacons()
     {
-        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(3., 3., 3.), "0C:F3:EE:03:F3:94",0);
-        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(9., 3., 3.), "0C:F3:EE:03:FB:03",0);
-        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(6., 6., 2.), "0C:F3:EE:03:F3:8E",0);
+        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
+        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0), "0C:F3:EE:03:FB:03",0);
+        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0), "0C:F3:EE:03:F3:8E",0);
 
         _listBeacons.add(b1);
         _listBeacons.add(b2);
@@ -93,8 +94,14 @@ public class MapActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listBe);
         //list.setAdapter(adapter);
     }
+    protected double Get2DDistance(double distanceReal, double Height)
+    {
+        return Math.pow(((distanceReal*distanceReal)-(Height*Height)), 0.5);
+    }
+
     protected void GetPositionUser()
     {
+
         double[][] positions = new double[][] {
                 { _listBeacons.get(0).getPosicao().getX(), _listBeacons.get(0).getPosicao().getY(), _listBeacons.get(0).getPosicao().getZ() },
                 { _listBeacons.get(1).getPosicao().getX(), _listBeacons.get(1).getPosicao().getY(), _listBeacons.get(1).getPosicao().getZ() },
@@ -107,6 +114,7 @@ public class MapActivity extends AppCompatActivity {
 
 
 
+
         NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions, distance), new LevenbergMarquardtOptimizer());
         LeastSquaresOptimizer.Optimum optimum = solver.solve();
 
@@ -114,10 +122,8 @@ public class MapActivity extends AppCompatActivity {
         double[] centroid = optimum.getPoint().toArray();
         System.out.println(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
 
-        TextView text = (TextView)findViewById(R.id.posicionUser);
-        text.setText(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
 
-        com.github.mikephil.charting.charts.ScatterChart list = (com.github.mikephil.charting.charts.ScatterChart)findViewById(R.id.chart);
+        ScatterChart list = (ScatterChart)findViewById(R.id.chart);
 
         List<Entry> entries = new ArrayList<Entry>();
 
@@ -126,18 +132,28 @@ public class MapActivity extends AppCompatActivity {
         entries.add(new Entry((float)positions[2][0], (float)positions[2][1]));
         entries.add(new Entry((float)positions[1][0], (float)positions[1][1]));
 
-        com.github.mikephil.charting.data.ScatterDataSet dataSet = new com.github.mikephil.charting.data.ScatterDataSet(entries, "Label");
-        com.github.mikephil.charting.data.ScatterData lineData = new com.github.mikephil.charting.data.ScatterData(dataSet);
+
+        List<Entry> entriesUser = new ArrayList<Entry>();
+        entriesUser.add(new Entry((float)centroid[0], (float)centroid[1]));
+
+
+        ScatterDataSet dataSet = new ScatterDataSet(entries, "Beacons");
+        dataSet.setColor(getResources().getColor(R.color.ColorBeacons), 255);
+        dataSet.setValueTextColor(getResources().getColor(R.color.ColorBeacons)); // styling, ...
+
+        ScatterDataSet dataSetUser = new ScatterDataSet(entriesUser, "Usuario");
+        dataSetUser.setColor(getResources().getColor(R.color.ColorUser), 255);
+        dataSetUser.setValueTextColor(getResources().getColor(R.color.ColorUser)); // styling, ...
+
+
+        ScatterData lineData = new ScatterData(dataSet);//beacons
+        lineData.addDataSet(dataSetUser);//user
 
         list.setData(lineData);
+        list.invalidate(); // refresh
 
 
-        ArrayList<String> listBe = new ArrayList<>();
-        for(BeaconDistance b: _listBeacons)
-        {
-            listBe.add("ID: "+ b.getBluetoothName() + " | Distancia: "+b.getDistance());
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listBe);
+
        // list.setAdapter(adapter);
 
     }
