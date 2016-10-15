@@ -41,6 +41,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import tech.waid.app.R;
 import tech.waid.app.model.BeaconDistance;
 import tech.waid.app.model.Ponto;
@@ -60,6 +62,9 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
     ArrayList<BeaconDistance> _listBeacons = new ArrayList<tech.waid.app.model.BeaconDistance>();
     protected static final String TAG = "RangingActivity";
     private BeaconManager beaconManager;
+    private TextView textcomponent;
+    private ScatterChart list;
+    private TextView cordPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,15 +79,20 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         beaconManager.getBeaconParsers().add(new BeaconParser().
                 setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
         beaconManager.bind(this);
-        TextView textcomponent = (TextView)findViewById(R.id.textPosition);
-        textcomponent.setText("Teste");
+        textcomponent = (TextView)findViewById(R.id.textPosition);
+        cordPosition = (TextView)findViewById(R.id.cordPosition);
+        list = (ScatterChart)findViewById(R.id.chart);
     }
     //Cria os beacons com suas cordenadas
     protected  void CreateBeacons()
     {
         tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
-        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0), "0C:F3:EE:03:FB:03",0);
-        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0), "0C:F3:EE:03:F3:8E",0);
+        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 2.45, 0), "0C:F3:EE:03:FB:03",0);
+        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(2.88, 2.20, 0), "0C:F3:EE:03:F3:8E",0);
+
+        //tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
+        //tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0), "0C:F3:EE:03:FB:03",0);
+        //tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0), "0C:F3:EE:03:F3:8E",0);
 
         _listBeacons.add(b1);
         _listBeacons.add(b2);
@@ -124,10 +134,8 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
 
         // the answer
         double[] centroid = optimum.getPoint().toArray();
-        System.out.println(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
+        cordPosition.setText(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
 
-
-        ScatterChart list = (ScatterChart)findViewById(R.id.chart);
 
         List<Entry> entries = new ArrayList<Entry>();
 
@@ -182,27 +190,35 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 if (beacons.size() > 0) {
+                    try {
+                        for (Beacon be : beacons) {
 
-                    for(Beacon be: beacons) {
-
-                        for (BeaconDistance b : _listBeacons) {
-                            if (b.getBluetoothName().equals(be.getBluetoothAddress())) {
-                                b.setDistance(be.getDistance());
-                                break;
+                            for (BeaconDistance b : _listBeacons) {
+                                if (b.getBluetoothName().equals(be.getBluetoothAddress())) {
+                                    b.setDistance(be.getDistance());
+                                    break;
+                                }
                             }
+
                         }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                String textField = "";
+                                //print
+                                for (BeaconDistance b : _listBeacons) {
+                                    textField += (+b.getId() + ": " + String.format("%.2f", b.getDistance()) + " | ");
+                                }
+                                textcomponent.setText(textField);
 
+                                GetPositionUser();
+                            }
+                        });
                     }
-                    String textField = "";
-                    TextView textcomponent = (TextView)findViewById(R.id.textPosition);
-                    //print
-                    for(BeaconDistance b : _listBeacons)
+                    catch (Exception e )
                     {
-                        textField += ( +b.getId() + ": "+ String.format("%.2f",b.getDistance()) + " | ");
+                        String error = e.getMessage().toString();
                     }
-                    textcomponent.setText(textField);
-
-                    GetPositionUser();
                 }
             }
         });
