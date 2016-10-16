@@ -1,32 +1,14 @@
 package tech.waid.app;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -36,20 +18,23 @@ import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.linear.RealVector;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
-import tech.waid.app.R;
 import tech.waid.app.model.BeaconDistance;
+import tech.waid.app.model.EventInfo;
 import tech.waid.app.model.Ponto;
 import tech.waid.app.trilateration.NonLinearLeastSquaresSolver;
 import tech.waid.app.trilateration.TrilaterationFunction;
+
 import com.github.mikephil.charting.charts.*;
 import com.github.mikephil.charting.data.*;
+
+import net.servicestack.func.Predicate;
+
+import static net.servicestack.func.Func.filter;
 
 public class MapActivity extends AppCompatActivity implements BeaconConsumer {
 
@@ -60,6 +45,7 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
     private ScanSettings settings;
     private List<ScanFilter> filters;
     ArrayList<BeaconDistance> _listBeacons = new ArrayList<tech.waid.app.model.BeaconDistance>();
+    ArrayList<EventInfo> _listEvents = new ArrayList<EventInfo>();
     protected static final String TAG = "RangingActivity";
     private BeaconManager beaconManager;
     private TextView textcomponent;
@@ -72,6 +58,7 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         setContentView(R.layout.activity_map);
 
         CreateBeacons();
+        CreateEvents();
 
         beaconManager = BeaconManager.getInstanceForApplication(this);
         // To detect proprietary beacons, you must add a line like below corresponding to your beacon
@@ -83,8 +70,18 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         cordPosition = (TextView)findViewById(R.id.cordPosition);
         list = (ScatterChart)findViewById(R.id.chart);
     }
+    protected void CreateEvents()
+    {
+        _listEvents = new ArrayList<>();
+
+        _listEvents.add(new EventInfo("Ponto Informativo","Evento 001",1, new Ponto(0,1,0), R.color.ColorEventBLUE));
+        _listEvents.add(new EventInfo("Ponto Informativo","Evento 002",1, new Ponto(1.2,0,0), R.color.ColorEventBLUE));
+        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 003",1, new Ponto(0.5,1.3,0), R.color.ColorEventRED));
+        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 004",1, new Ponto(0,2.0,0), R.color.ColorEventRED));
+    }
+
     //Cria os beacons com suas cordenadas
-    protected  void CreateBeacons()
+    protected void CreateBeacons()
     {
         tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
         tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 2.45, 0), "0C:F3:EE:03:FB:03",0);
@@ -148,18 +145,58 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         List<Entry> entriesUser = new ArrayList<Entry>();
         entriesUser.add(new Entry((float)centroid[0], (float)centroid[1]));
 
+        ArrayList<Entry> entriesEventInfo = new ArrayList<>();
+
+        ArrayList<EventInfo> _listEventsInformativo = filter(_listEvents, new Predicate<EventInfo>() {
+            @Override
+            public boolean apply(EventInfo p) {
+                return p.getColor() == R.color.ColorEventBLUE;
+            }
+        });
+
+        for (EventInfo event : _listEventsInformativo)
+        {
+            entriesEventInfo.add(new Entry(((float)event.getPonto().getX()), ((float)event.getPonto().getY()), (float)event.getPonto().getZ()));
+        }
+
+
+        ArrayList<Entry> entriesEventAlert = new ArrayList<>();
+
+        ArrayList<EventInfo> _listEventsAlerta = filter(_listEvents, new Predicate<EventInfo>() {
+            @Override
+            public boolean apply(EventInfo p) {
+                return p.getColor() == R.color.ColorEventRED;
+            }
+        });
+
+        for (EventInfo event : _listEventsAlerta)
+        {
+            entriesEventAlert.add(new Entry(((float)event.getPonto().getX()), ((float)event.getPonto().getY()), (float)event.getPonto().getZ()));
+        }
 
         ScatterDataSet dataSet = new ScatterDataSet(entries, "Beacons");
-        dataSet.setColor(getResources().getColor(R.color.ColorBeacons), 255);
-        dataSet.setValueTextColor(getResources().getColor(R.color.ColorBeacons)); // styling, ...
+        dataSet.setColor(getResources().getColor(R.color.ColorEventGREEN), 255);
+        dataSet.setValueTextColor(getResources().getColor(R.color.ColorEventGREEN)); // styling, ...
 
         ScatterDataSet dataSetUser = new ScatterDataSet(entriesUser, "Usuario");
         dataSetUser.setColor(getResources().getColor(R.color.ColorUser), 255);
         dataSetUser.setValueTextColor(getResources().getColor(R.color.ColorUser)); // styling, ...
+        dataSetUser.setScatterShape(ScatterChart.ScatterShape.TRIANGLE);
 
+        ScatterDataSet dataSetEventInfo = new ScatterDataSet(entriesEventInfo, "Evento Informativo");
+        dataSetEventInfo.setColor(getResources().getColor(R.color.ColorEventBLUE), 255);
+        dataSetEventInfo.setValueTextColor(getResources().getColor(R.color.ColorEventBLUE)); // styling, ...
+        dataSetEventInfo.setScatterShape(ScatterChart.ScatterShape.CIRCLE);
+
+        ScatterDataSet dataSetAlerta = new ScatterDataSet(entriesEventAlert, "Evento Alerta");
+        dataSetAlerta.setColor(getResources().getColor(R.color.ColorEventRED), 255);
+        dataSetAlerta.setValueTextColor(getResources().getColor(R.color.ColorEventRED)); // styling, ...
+        dataSetAlerta.setScatterShape(ScatterChart.ScatterShape.CIRCLE);
 
         ScatterData lineData = new ScatterData(dataSet);//beacons
         lineData.addDataSet(dataSetUser);//user
+        lineData.addDataSet(dataSetEventInfo);//user
+        lineData.addDataSet(dataSetAlerta);//user
 
         list.setData(lineData);
         list.invalidate(); // refresh

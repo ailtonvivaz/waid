@@ -5,4 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="ColorBeacons">#FF0000</color>
     <color name="ColorUser">#FFD800</color>
+    <color name="ColorEventRED">#FF0000</color>
+    <color name="ColorEventGREEN">#1dff00</color>
+    <color name="ColorEventBLUE">#0800FF</color>
 </resources>
