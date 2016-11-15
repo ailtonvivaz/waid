@@ -3,12 +3,14 @@ package tech.waid.app;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -75,10 +77,10 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
     {
         _listEvents = new ArrayList<>();
 
-        _listEvents.add(new EventInfo("Ponto Informativo","Evento 001",1, new Ponto(0,5,0), R.color.ColorEventBLUE));
-        _listEvents.add(new EventInfo("Ponto Informativo","Evento 002",1, new Ponto(3,8,0), R.color.ColorEventBLUE));
-        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 003",1, new Ponto(3,5,0), R.color.ColorEventRED));
-        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 004",1, new Ponto(5,9.0,0), R.color.ColorEventRED));
+        _listEvents.add(new EventInfo("Ponto Informativo","Quadro",1, new Ponto(0,5,0), R.color.ColorEventBLUE));
+        _listEvents.add(new EventInfo("Ponto Informativo","Porta de saida",1, new Ponto(3,8,0), R.color.ColorEventBLUE));
+        _listEvents.add(new EventInfo("Ponto ALERTA","Cuidado escadas!",1, new Ponto(3,5,0), R.color.ColorEventRED));
+        _listEvents.add(new EventInfo("Ponto ALERTA","Cuidado um burraco",1, new Ponto(5,9.0,0), R.color.ColorEventRED));
     }
 
     //Cria os beacons com suas cordenadas
@@ -116,12 +118,14 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
     protected void GetPositionUser()
     {
 
+    //POPULA COM A POSICAO DOS BEACONS
         double[][] positions = new double[][] {
                 { _listBeacons.get(0).getPosicao().getX(), _listBeacons.get(0).getPosicao().getY(), _listBeacons.get(0).getPosicao().getZ() },
                 { _listBeacons.get(1).getPosicao().getX(), _listBeacons.get(1).getPosicao().getY(), _listBeacons.get(1).getPosicao().getZ() },
                 { _listBeacons.get(2).getPosicao().getX(), _listBeacons.get(2).getPosicao().getY(), _listBeacons.get(2).getPosicao().getZ() },
                 { _listBeacons.get(3).getPosicao().getX(), _listBeacons.get(3).getPosicao().getY(), _listBeacons.get(3).getPosicao().getZ() }
         };
+        //POPULA COM A DISTANCIA DO USUARIO AOS BEACONS
         double[] distance = new double[] {
                 _listBeacons.get(0).getDistance(), _listBeacons.get(1).getDistance(), _listBeacons.get(2).getDistance(), _listBeacons.get(3).getDistance()
         };
@@ -129,14 +133,15 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
 
 
 
-
+        //ALGORITMO DE TRILATERAÇÃO
         NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(new TrilaterationFunction(positions, distance), new LevenbergMarquardtOptimizer());
         LeastSquaresOptimizer.Optimum optimum = solver.solve();
 
-        // the answer
+        // PRINTA NA TELA AS COORDENADAS COLETADAS
         double[] centroid = optimum.getPoint().toArray();
         cordPosition.setText(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
 
+        //ENVIA PARA O BANCO DE DADOS PARA VISUALIZAÇÃO NO BLENDER
         try {
 
             UserService.InsertPosition(centroid[0], centroid[1], centroid[2]);//ENVIA PARA O BANCO DE DADOS
@@ -145,6 +150,7 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         {
 
         }
+
 
         List<Entry> entries = new ArrayList<Entry>();
 
@@ -166,7 +172,7 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
                 return p.getColor() == R.color.ColorEventBLUE;
             }
         });
-
+        //LISTA DE PONTOS INFORMATIVOS
         for (EventInfo event : _listEventsInformativo)
         {
             entriesEventInfo.add(new Entry(((float)event.getPonto().getX()), ((float)event.getPonto().getY()), (float)event.getPonto().getZ()));
@@ -181,7 +187,7 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
                 return p.getColor() == R.color.ColorEventRED;
             }
         });
-
+        //LISTA DE PONTOS DE ALERTA
         for (EventInfo event : _listEventsAlerta)
         {
             entriesEventAlert.add(new Entry(((float)event.getPonto().getX()), ((float)event.getPonto().getY()), (float)event.getPonto().getZ()));
@@ -214,7 +220,70 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         list.setData(lineData);
         list.invalidate(); // refresh
 
+        //VERIFICA SE O PONTO COLETADO ESTÁ DENTRO DE UM DOS RAIOS DOS PONTOS DE ALERTA OU INFORMATIVOS
+        try {
+            //ponto de alerta
+            for (EventInfo event : _listEventsAlerta)
+            {
+                double x = Math.pow(event.getPonto().getX() - centroid[0], 2);
+                double y = Math.pow(event.getPonto().getY() - centroid[1], 2);
+                double z = Math.pow(event.getPonto().getZ() - centroid[2], 2);
 
+                double raio = Math.pow(x+y+z, 0.5);
+
+                if(raio <= event.getRangeToHit())
+                {
+                    String msg = "ALERTA: "+event.getDescription();
+                    //Está dentro do raio de disparo
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+
+                    MediaPlayer mp = MediaPlayer.create(this, R.raw.alertsound);
+                    mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+
+                            mp.release();
+                        }
+
+                    });
+                    mp.start();
+
+                }
+            }
+            //ponto de informação
+            for (EventInfo event : _listEventsInformativo)
+            {
+                double x = Math.pow(event.getPonto().getX() - centroid[0], 2);
+                double y = Math.pow(event.getPonto().getY() - centroid[1], 2);
+                double z = Math.pow(event.getPonto().getZ() - centroid[2], 2);
+
+                double raio = Math.pow(x+y+z, 0.5);
+
+                if(raio <= event.getRangeToHit())
+                {
+                    String msg = "INFO: "+event.getDescription();
+                    //Está dentro do raio de disparo
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+
+                    MediaPlayer mp = MediaPlayer.create(this, R.raw.infosound);
+                    mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+
+                            mp.release();
+                        }
+
+                    });
+                    mp.start();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+
+        }
 
        // list.setAdapter(adapter);
 
