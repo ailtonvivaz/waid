@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import tech.waid.app.Services.UserService;
 import tech.waid.app.model.BeaconDistance;
 import tech.waid.app.model.EventInfo;
 import tech.waid.app.model.Ponto;
@@ -74,26 +75,28 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
     {
         _listEvents = new ArrayList<>();
 
-        _listEvents.add(new EventInfo("Ponto Informativo","Evento 001",1, new Ponto(0,1,0), R.color.ColorEventBLUE));
-        _listEvents.add(new EventInfo("Ponto Informativo","Evento 002",1, new Ponto(1.2,0,0), R.color.ColorEventBLUE));
-        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 003",1, new Ponto(0.5,1.3,0), R.color.ColorEventRED));
-        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 004",1, new Ponto(0,2.0,0), R.color.ColorEventRED));
+        _listEvents.add(new EventInfo("Ponto Informativo","Evento 001",1, new Ponto(0,5,0), R.color.ColorEventBLUE));
+        _listEvents.add(new EventInfo("Ponto Informativo","Evento 002",1, new Ponto(3,8,0), R.color.ColorEventBLUE));
+        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 003",1, new Ponto(3,5,0), R.color.ColorEventRED));
+        _listEvents.add(new EventInfo("Ponto ALERTA","Evento 004",1, new Ponto(5,9.0,0), R.color.ColorEventRED));
     }
 
     //Cria os beacons com suas cordenadas
     protected void CreateBeacons()
     {
-        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
-        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 2.45, 0), "0C:F3:EE:03:FB:03",0);
-        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(2.88, 2.20, 0), "0C:F3:EE:03:F3:8E",0);
-
         //tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
-        //tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0), "0C:F3:EE:03:FB:03",0);
-        //tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0), "0C:F3:EE:03:F3:8E",0);
+        //tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 2.45, 0), "0C:F3:EE:03:FB:03",0);
+        //tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(2.88, 2.20, 0), "0C:F3:EE:03:F3:8E",0);
+
+        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
+        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0), "0C:F3:EE:03:FB:03",0);
+        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0), "0C:F3:EE:03:F3:8E",0);
+        tech.waid.app.model.BeaconDistance b4 = new tech.waid.app.model.BeaconDistance(21,new Ponto(11, 0, 0), "0C:F3:EE:03:FB:0A",0);
 
         _listBeacons.add(b1);
         _listBeacons.add(b2);
         _listBeacons.add(b3);
+        _listBeacons.add(b4);
 
        // ListView list = (ListView)findViewById(R.id.listviewCord);
 
@@ -116,10 +119,11 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         double[][] positions = new double[][] {
                 { _listBeacons.get(0).getPosicao().getX(), _listBeacons.get(0).getPosicao().getY(), _listBeacons.get(0).getPosicao().getZ() },
                 { _listBeacons.get(1).getPosicao().getX(), _listBeacons.get(1).getPosicao().getY(), _listBeacons.get(1).getPosicao().getZ() },
-                { _listBeacons.get(2).getPosicao().getX(), _listBeacons.get(2).getPosicao().getY(), _listBeacons.get(2).getPosicao().getZ() }
+                { _listBeacons.get(2).getPosicao().getX(), _listBeacons.get(2).getPosicao().getY(), _listBeacons.get(2).getPosicao().getZ() },
+                { _listBeacons.get(3).getPosicao().getX(), _listBeacons.get(3).getPosicao().getY(), _listBeacons.get(3).getPosicao().getZ() }
         };
         double[] distance = new double[] {
-                _listBeacons.get(0).getDistance(), _listBeacons.get(1).getDistance(), _listBeacons.get(2).getDistance()
+                _listBeacons.get(0).getDistance(), _listBeacons.get(1).getDistance(), _listBeacons.get(2).getDistance(), _listBeacons.get(3).getDistance()
         };
 
 
@@ -133,12 +137,21 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         double[] centroid = optimum.getPoint().toArray();
         cordPosition.setText(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
 
+        try {
+
+            UserService.InsertPosition(centroid[0], centroid[1], centroid[2]);//ENVIA PARA O BANCO DE DADOS
+        }
+        catch (Exception e)
+        {
+
+        }
 
         List<Entry> entries = new ArrayList<Entry>();
 
         // turn your data into Entry objects
         entries.add(new Entry((float)positions[0][0], (float)positions[0][1]));
         entries.add(new Entry((float)positions[2][0], (float)positions[2][1]));
+        entries.add(new Entry((float)positions[3][0], (float)positions[3][1]));
         entries.add(new Entry((float)positions[1][0], (float)positions[1][1]));
 
 
