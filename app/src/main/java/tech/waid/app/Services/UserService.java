@@ -32,7 +32,7 @@ public final  class UserService {
            String url = "http://waidwebapi.azurewebsites.net/api/UserInfo?X=" + Double.toString(x) + "&Y=" + Double.toString(y) + "&Z=" + Double.toString(z);
            URI urlToSend = new URI(url);
            LongOperation tsk = new LongOperation();
-           //tsk.execute(url);///DESCOMENTAR QUANDO FOR APRESENTAR
+           tsk.execute(url);
        }
        catch (URISyntaxException ex) {
 

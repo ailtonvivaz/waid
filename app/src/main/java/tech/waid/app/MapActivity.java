@@ -90,15 +90,15 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         //tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 2.45, 0), "0C:F3:EE:03:FB:03",0);
         //tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(2.88, 2.20, 0), "0C:F3:EE:03:F3:8E",0);
 
-        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0), "0C:F3:EE:03:F3:94",0);
-        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0), "0C:F3:EE:03:FB:03",0);
-        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0), "0C:F3:EE:03:F3:8E",0);
-        tech.waid.app.model.BeaconDistance b4 = new tech.waid.app.model.BeaconDistance(21,new Ponto(11, 0, 0), "0C:F3:EE:03:FB:0A",0);
+        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0.1), "0C:F3:EE:03:F3:94",0);
+        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0.02), "0C:F3:EE:03:FB:03",0);
+        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0.03), "0C:F3:EE:03:F3:8E",0);
+        //tech.waid.app.model.BeaconDistance b4 = new tech.waid.app.model.BeaconDistance(21,new Ponto(11, 0, 0), "0C:F3:EE:03:FB:0A",0);
 
         _listBeacons.add(b1);
         _listBeacons.add(b2);
         _listBeacons.add(b3);
-        _listBeacons.add(b4);
+        //_listBeacons.add(b4);
 
        // ListView list = (ListView)findViewById(R.id.listviewCord);
 
@@ -115,22 +115,21 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         return Math.pow(((distanceReal*distanceReal)-(Height*Height)), 0.5);
     }
 
-    protected void GetPositionUser()
-    {
-
-    //POPULA COM A POSICAO DOS BEACONS
-        double[][] positions = new double[][] {
-                { _listBeacons.get(0).getPosicao().getX(), _listBeacons.get(0).getPosicao().getY(), _listBeacons.get(0).getPosicao().getZ() },
-                { _listBeacons.get(1).getPosicao().getX(), _listBeacons.get(1).getPosicao().getY(), _listBeacons.get(1).getPosicao().getZ() },
-                { _listBeacons.get(2).getPosicao().getX(), _listBeacons.get(2).getPosicao().getY(), _listBeacons.get(2).getPosicao().getZ() },
-                { _listBeacons.get(3).getPosicao().getX(), _listBeacons.get(3).getPosicao().getY(), _listBeacons.get(3).getPosicao().getZ() }
+    protected void GetPositionUser() {
+        try
+        {
+        //POPULA COM A POSICAO DOS BEACONS
+        double[][] positions = new double[][]{
+                {_listBeacons.get(0).getPosicao().getX(), _listBeacons.get(0).getPosicao().getY(), _listBeacons.get(0).getPosicao().getZ()},
+                {_listBeacons.get(1).getPosicao().getX(), _listBeacons.get(1).getPosicao().getY(), _listBeacons.get(1).getPosicao().getZ()},
+                {_listBeacons.get(2).getPosicao().getX(), _listBeacons.get(2).getPosicao().getY(), _listBeacons.get(2).getPosicao().getZ()}
+                //{ _listBeacons.get(3).getPosicao().getX(), _listBeacons.get(3).getPosicao().getY(), _listBeacons.get(3).getPosicao().getZ() }
         };
         //POPULA COM A DISTANCIA DO USUARIO AOS BEACONS
-        double[] distance = new double[] {
-                _listBeacons.get(0).getDistance(), _listBeacons.get(1).getDistance(), _listBeacons.get(2).getDistance(), _listBeacons.get(3).getDistance()
+        double[] distance = new double[]{
+                //_listBeacons.get(0).getDistance(), _listBeacons.get(1).getDistance(), _listBeacons.get(2).getDistance(), _listBeacons.get(3).getDistance()
+                _listBeacons.get(0).getDistance(), _listBeacons.get(1).getDistance(), _listBeacons.get(2).getDistance()
         };
-
-
 
 
         //ALGORITMO DE TRILATERAÇÃO
@@ -139,15 +138,13 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
 
         // PRINTA NA TELA AS COORDENADAS COLETADAS
         double[] centroid = optimum.getPoint().toArray();
-        cordPosition.setText(String.format( "(%.2f, %.2f, %.2f)", centroid[0],  centroid[1], centroid[2]));
+        cordPosition.setText(String.format("(%.2f, %.2f, %.2f)", centroid[0], centroid[1], centroid[2]));
 
         //ENVIA PARA O BANCO DE DADOS PARA VISUALIZAÇÃO NO BLENDER
         try {
 
             UserService.InsertPosition(centroid[0], centroid[1], centroid[2]);//ENVIA PARA O BANCO DE DADOS
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
 
         }
 
@@ -155,14 +152,14 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         List<Entry> entries = new ArrayList<Entry>();
 
         // turn your data into Entry objects
-        entries.add(new Entry((float)positions[0][0], (float)positions[0][1]));
-        entries.add(new Entry((float)positions[2][0], (float)positions[2][1]));
-        entries.add(new Entry((float)positions[3][0], (float)positions[3][1]));
-        entries.add(new Entry((float)positions[1][0], (float)positions[1][1]));
+        entries.add(new Entry((float) positions[0][0], (float) positions[0][1]));
+        entries.add(new Entry((float) positions[2][0], (float) positions[2][1]));
+        //entries.add(new Entry((float)positions[3][0], (float)positions[3][1]));
+        entries.add(new Entry((float) positions[1][0], (float) positions[1][1]));
 
 
         List<Entry> entriesUser = new ArrayList<Entry>();
-        entriesUser.add(new Entry((float)centroid[0], (float)centroid[1]));
+        entriesUser.add(new Entry((float) centroid[0], (float) centroid[1]));
 
         ArrayList<Entry> entriesEventInfo = new ArrayList<>();
 
@@ -173,9 +170,8 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
             }
         });
         //LISTA DE PONTOS INFORMATIVOS
-        for (EventInfo event : _listEventsInformativo)
-        {
-            entriesEventInfo.add(new Entry(((float)event.getPonto().getX()), ((float)event.getPonto().getY()), (float)event.getPonto().getZ()));
+        for (EventInfo event : _listEventsInformativo) {
+            entriesEventInfo.add(new Entry(((float) event.getPonto().getX()), ((float) event.getPonto().getY()), (float) event.getPonto().getZ()));
         }
 
 
@@ -188,9 +184,8 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
             }
         });
         //LISTA DE PONTOS DE ALERTA
-        for (EventInfo event : _listEventsAlerta)
-        {
-            entriesEventAlert.add(new Entry(((float)event.getPonto().getX()), ((float)event.getPonto().getY()), (float)event.getPonto().getZ()));
+        for (EventInfo event : _listEventsAlerta) {
+            entriesEventAlert.add(new Entry(((float) event.getPonto().getX()), ((float) event.getPonto().getY()), (float) event.getPonto().getZ()));
         }
 
         ScatterDataSet dataSet = new ScatterDataSet(entries, "Beacons");
@@ -223,17 +218,15 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         //VERIFICA SE O PONTO COLETADO ESTÁ DENTRO DE UM DOS RAIOS DOS PONTOS DE ALERTA OU INFORMATIVOS
         try {
             //ponto de alerta
-            for (EventInfo event : _listEventsAlerta)
-            {
+            for (EventInfo event : _listEventsAlerta) {
                 double x = Math.pow(event.getPonto().getX() - centroid[0], 2);
                 double y = Math.pow(event.getPonto().getY() - centroid[1], 2);
                 double z = Math.pow(event.getPonto().getZ() - centroid[2], 2);
 
-                double raio = Math.pow(x+y+z, 0.5);
+                double raio = Math.pow(x + y + z, 0.5);
 
-                if(raio <= event.getRangeToHit())
-                {
-                    String msg = "ALERTA: "+event.getDescription();
+                if (raio <= event.getRangeToHit()) {
+                    String msg = "ALERTA: " + event.getDescription();
                     //Está dentro do raio de disparo
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 
@@ -252,17 +245,15 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
                 }
             }
             //ponto de informação
-            for (EventInfo event : _listEventsInformativo)
-            {
+            for (EventInfo event : _listEventsInformativo) {
                 double x = Math.pow(event.getPonto().getX() - centroid[0], 2);
                 double y = Math.pow(event.getPonto().getY() - centroid[1], 2);
                 double z = Math.pow(event.getPonto().getZ() - centroid[2], 2);
 
-                double raio = Math.pow(x+y+z, 0.5);
+                double raio = Math.pow(x + y + z, 0.5);
 
-                if(raio <= event.getRangeToHit())
-                {
-                    String msg = "INFO: "+event.getDescription();
+                if (raio <= event.getRangeToHit()) {
+                    String msg = "INFO: " + event.getDescription();
                     //Está dentro do raio de disparo
                     Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 
@@ -279,12 +270,14 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
                     mp.start();
                 }
             }
+        } catch (Exception e) {
+
         }
-        catch (Exception e)
+    }
+        catch(Exception e)
         {
 
         }
-
        // list.setAdapter(adapter);
 
     }
