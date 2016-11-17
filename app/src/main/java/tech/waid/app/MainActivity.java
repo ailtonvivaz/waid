@@ -138,6 +138,9 @@ public class MainActivity extends AppCompatActivity {
         Button search = (Button)findViewById(R.id.searchBeaconsBtn);
         search.setOnClickListener(onClickListener);
 
+        Button demo = (Button)findViewById(R.id.DemoBeaconBtn);
+        demo.setOnClickListener(onClickListenerDEMO);
+
         but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -161,6 +164,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             startActivity(new Intent(MainActivity.this, MapActivity.class));
+        }
+    };
+    View.OnClickListener onClickListenerDEMO = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(MainActivity.this, DemoActivity.class));
         }
     };
 }

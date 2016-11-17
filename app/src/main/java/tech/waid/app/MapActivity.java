@@ -90,10 +90,14 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
         //tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 2.45, 0), "0C:F3:EE:03:FB:03",0);
         //tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(2.88, 2.20, 0), "0C:F3:EE:03:F3:8E",0);
 
-        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0.1), "0C:F3:EE:03:F3:94",0);
-        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0.02), "0C:F3:EE:03:FB:03",0);
-        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0.03), "0C:F3:EE:03:F3:8E",0);
+        //tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(0, 0, 0.1), "0C:F3:EE:03:F3:94",0);
+        //tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(0, 6.6, 0.02), "0C:F3:EE:03:FB:03",0);
+        //tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(11, 6.6, 0.03), "0C:F3:EE:03:F3:8E",0);
         //tech.waid.app.model.BeaconDistance b4 = new tech.waid.app.model.BeaconDistance(21,new Ponto(11, 0, 0), "0C:F3:EE:03:FB:0A",0);
+
+        tech.waid.app.model.BeaconDistance b1 = new tech.waid.app.model.BeaconDistance(24,new Ponto(2, 2.30, 0.81), "0C:F3:EE:03:F3:94",0);
+        tech.waid.app.model.BeaconDistance b2 = new tech.waid.app.model.BeaconDistance(16,new Ponto(2, 6.1, 0.8), "0C:F3:EE:03:FB:03",0);
+        tech.waid.app.model.BeaconDistance b3 = new tech.waid.app.model.BeaconDistance(15,new Ponto(8, 6.12, 0.8), "0C:F3:EE:03:F3:8E",0);
 
         _listBeacons.add(b1);
         _listBeacons.add(b2);
@@ -183,6 +187,7 @@ public class MapActivity extends AppCompatActivity implements BeaconConsumer {
                 return p.getColor() == R.color.ColorEventRED;
             }
         });
+
         //LISTA DE PONTOS DE ALERTA
         for (EventInfo event : _listEventsAlerta) {
             entriesEventAlert.add(new Entry(((float) event.getPonto().getX()), ((float) event.getPonto().getY()), (float) event.getPonto().getZ()));
